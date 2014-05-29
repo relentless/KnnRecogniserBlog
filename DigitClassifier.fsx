@@ -52,14 +52,23 @@ testSet.[..4]
         (digit.Pixels |> classifyByNearest 3))
 
 (******* 8. EVALUATING THE MODEL AGAINST VALIDATION DATA *******)
-let calculateAccuracyWithNearest k =
-    testSet
+let calculateAccuracyWithNearest k dataSet =
+    dataSet
     |> Array.averageBy (fun digit -> 
         if digit.Pixels |> classifyByNearest k = digit.Label then 1.0 
         else 0.0)
 
+(******* 9. GET AN IDEA ABOUT A GOOD RANGE OF K *******)
 let predictionAccuracy = 
     [1;3;9;27]
-    |> List.map (fun k -> (k, calculateAccuracyWithNearest k))
+    |> List.map (fun k -> (k, crossValidationSet |> calculateAccuracyWithNearest k))
 
 Chart.Line predictionAccuracy
+
+(******* 10. FIND THE BEST K *******)
+let bestK =
+    [1..20]
+    |> List.maxBy (fun k -> crossValidationSet |> calculateAccuracyWithNearest k)
+
+(******* 11. THE FINAL RESULT! *******)
+testSet |> calculateAccuracyWithNearest bestK
